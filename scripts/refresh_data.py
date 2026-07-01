@@ -1,0 +1,1 @@
+print('Fase 1: script reservado. En esta entrega el modelo ya fue convertido desde Dashboard_WFM(4).xlsx. Para futuras bases, usa el conversor de la carpeta de desarrollo o solicita Fase 2 para automatizar el reemplazo de /data/base.xlsx.')
