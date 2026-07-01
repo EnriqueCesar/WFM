@@ -51,3 +51,9 @@ Incluye actualización completa para análisis dinámico:
 5. Usa Treemap/Sunburst para entender dónde está el impacto.
 6. Usa Comparador semanal para validar crecimiento o reducción.
 
+
+## FASE 3
+
+Esta versión agrega Forecast Intelligence, Items Intelligence, Insights automáticos, Comparador ejecutivo y Exportación PDF profesional.
+
+Para generar PDF: abre la página `Reportes` y presiona el botón `PDF`. Selecciona guardar como PDF en el navegador.
