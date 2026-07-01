@@ -51,3 +51,29 @@ Base procesada: `Dashboard_WFM(4).xlsx`
 
 ## Entrega
 La Fase 1 contiene PWA funcional, modelo normalizado, filtros sincronizados, dashboard ejecutivo, tendencias, Código Pago, NC, Items, Productividad y exportación PDF/impresión.
+
+
+# FASE 2 · Auditoría Intelligence
+
+## Modelo analítico aplicado
+
+Se mantienen dos familias normalizadas en `data/model.json`:
+
+- `p`: matriz compacta de Código de Pago `[registro, tipo, valor]`.
+- `nc`: matriz compacta de NC `[registro, tipo, valor]`.
+- `pt`: catálogo de conceptos de Código de Pago.
+- `nt`: catálogo de conceptos NC.
+
+Esto evita depender de columnas anchas del Excel y permite calcular porcentajes siempre dentro del filtro activo.
+
+## Validaciones funcionales
+
+- Pareto calcula el total sobre el subconjunto filtrado.
+- Heatmap cruza concepto vs semana con intensidad relativa al filtro actual.
+- Treemap permite bajar de DM a Tienda y después a concepto.
+- Sunburst resume DM, Tienda y Concepto en anillos jerárquicos.
+- Comparador semanal calcula Semana A vs Semana B sin modificar la base.
+
+## Nota de mantenimiento
+
+Para nuevas bases, conservar encabezados equivalentes a `Codigo de Pago_*`, `NC_*`, `Items_*`, `Horas_*`, `IPLH`, `TPLH`, `Ratio`, `Exactitud Kronos`, `DM`, `CC Nombre`, `Reg Nom Actual`, `Semana`, `Fecha mes`.
