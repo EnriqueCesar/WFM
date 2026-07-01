@@ -1,59 +1,60 @@
-# ☕ WFM Intelligence
-## Planning is Key
-**Workforce Management Executive Suite**
+# WFM Intelligence v1.0
+## Executive Command Center · Planning is Key
 
-Proyecto PWA listo para GitHub Pages.
+Proyecto PWA listo para GitHub Pages, optimizado y simplificado para usar únicamente las columnas con instrucción.
 
-## Entrega Fase 1
-- PWA instalable y offline.
-- Diseño ejecutivo estilo Starbucks.
-- Filtros sincronizados: Región, DM, Tienda, Mes, Semana, Formato y Categoría.
-- Dashboard Ejecutivo con 8 KPIs inteligentes.
-- Módulos: Executive, Productividad, Plantilla, Horas, Código Pago, NC, Items, Tendencias, Forecast, Mapa y Reportes.
-- Normalización automática ya aplicada a familias `Codigo de Pago_*` y `NC_*`.
-- Exportación PDF por impresión en formato limpio.
-- Modelo optimizado en `/data/model.json` para no subir el Excel pesado al repositorio.
+## Qué incluye
+
+- Executive Score / WFM Score.
+- Centro de decisiones: máximo 4 alertas accionables.
+- Filtros dinámicos: Región, DM, Tienda, Mes y selección múltiple de semanas.
+- Menú limpio: Inicio, Indicadores, Código Pago, NC, Plantilla, Items, Tendencias, Reportes y Configuración.
+- Tablas inteligentes con Valor, %, Semana anterior, Variación, Semáforo y Estado.
+- Gráficas con eje horizontal, eje vertical y valores visibles.
+- Código Pago normalizado.
+- NC normalizado.
+- Modelo limpio: omite columnas sin instrucción.
+- PWA instalable y compatible con GitHub Pages.
 
 ## Publicar en GitHub Pages
-1. Crea el repositorio `wfm_intelligence`.
-2. Sube todo el contenido de esta carpeta.
-3. En GitHub: Settings → Pages → Deploy from branch → `main` → `/root`.
-4. Abre la URL publicada.
+
+1. Sube todo el contenido del ZIP al repositorio `wfm_intelligence`.
+2. En GitHub ve a **Settings > Pages**.
+3. Selecciona **Deploy from branch**.
+4. Branch: `main` / folder: `/root`.
+5. Guarda y abre el enlace publicado.
 
 ## Actualización mensual
-La Fase 1 incluye el modelo ya convertido. Para actualizar con otra base, reemplaza el Excel en local y ejecuta el script de conversión incluido en `scripts/refresh_data.py`.
 
-## Nota de peso
-El Excel original supera 20 MB. Para mantener el proyecto optimizado, el ZIP no incluye el `.xlsx`; incluye el modelo web comprimible y listo para uso.
+La app usa `data/model.json` para cargar rápido. Para actualizar datos:
 
+1. Reemplaza el archivo `data/base.xlsx` con la nueva base mensual.
+2. Ejecuta:
 
-## Entrega Fase 2 · Intelligence
+```bash
+python scripts/refresh_data.py
+```
 
-Incluye actualización completa para análisis dinámico:
+3. Sube el nuevo `data/model.json` a GitHub.
 
-- Código de Pago Intelligence con modelo normalizado.
-- NC Intelligence con modelo normalizado.
-- Heatmap Código de Pago por semana.
-- Heatmap NC por semana.
-- Pareto interactivo 80/20.
-- Treemap con drill down Región → DM → Tienda → Concepto.
-- Sunburst jerárquico para lectura ejecutiva.
-- Insights automáticos por filtro activo.
-- Comparador semanal A vs B.
-- Optimización para mantener el proyecto por debajo de 20 MB sin incluir el Excel original.
+## Columnas usadas
 
-### Uso operativo
+Solo las columnas con instrucción del archivo original:
 
-1. Entra a **Código Pago** o **NC**.
-2. Ajusta filtros de Región, DM, Tienda, Mes, Semana, Formato o Categoría.
-3. Revisa Pareto para priorizar.
-4. Usa Heatmap para detectar semanas con concentración.
-5. Usa Treemap/Sunburst para entender dónde está el impacto.
-6. Usa Comparador semanal para validar crecimiento o reducción.
+- Filtros: CC Nombre, DM, Fecha mes, Reg Nom Actual, Semana.
+- Indicadores: IPLH, TPLH, Ratio, % NC, Avg Horas Planificadas, Plantilla, Exactitud Kronos, Items, Items SM, Items Kronos, Items Reales, Órdenes Reales.
+- Código Pago: solo las columnas `Avg (NC ...)` indicadas.
+- NC: solo las columnas `NC ...` indicadas.
 
+## Archivos principales
 
-## FASE 3
-
-Esta versión agrega Forecast Intelligence, Items Intelligence, Insights automáticos, Comparador ejecutivo y Exportación PDF profesional.
-
-Para generar PDF: abre la página `Reportes` y presiona el botón `PDF`. Selecciona guardar como PDF en el navegador.
+```text
+index.html
+manifest.json
+sw.js
+src/app.js
+src/styles.css
+data/model.json
+scripts/refresh_data.py
+assets/logo.png
+```

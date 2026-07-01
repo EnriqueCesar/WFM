@@ -1,124 +1,69 @@
-"""WFM Intelligence · conversor mensual
-
-Uso local:
-  1) Coloca tu Excel como data/base.xlsx
-  2) Ejecuta: python scripts/refresh_data.py
-  3) Se actualiza data/model.json
-
-Requiere: pip install openpyxl
-"""
-from __future__ import annotations
-import json, re, math
-from pathlib import Path
 from openpyxl import load_workbook
-
-ROOT = Path(__file__).resolve().parents[1]
-INPUT = ROOT / "data" / "base.xlsx"
-OUTPUT = ROOT / "data" / "model.json"
-SHEET = "Base_WFM"
-
-DIM_MAP = {
-    "region": ["Reg Nom Actual", "Región"],
-    "dm": ["DM"],
-    "tienda": ["CC Nombre"],
-    "cc": ["CC"],
-    "mes": ["Fecha mes", "Mes"],
-    "mesNum": ["MES NUM"],
-    "semana": ["Semana"],
-    "formato": ["Tipo de Tienda", "Sub Categoria Ops"],
-    "categoria": ["Categoria Ops"],
-    "lat": ["LATITUD"],
-    "lng": ["LONGITUD"],
-}
-METRIC_MAP = {
-    "IPLH":"IPLH", "TPLH":"TPLH", "Ratio":"Ratio",
-    "Exactitud_Kronos":"Exactitud Kronos", "Exactitud_Pronostico_gerente":"Exactitud Pronostico gerente",
-    "NC":"% NC", "Avg_Horas_Planificadas":"Avg (Horas Planificadas)",
-    "Horas_Fcst":"Horas Fcst", "Horas_Planificadas":"Horas Planificadas", "Horas_Kronos":"Horas Kronos",
-    "Emp_Autorizados":"Emp. Autorizados", "Emp_Reales":"Emp. Reales",
-    "Items":"Items", "Items_Gerente_Aj":"Items Gerente (Aj.)", "Items_Kronos_Proy":"Items Kronos (Proy.)", "Items_Reales":"Items Reales",
-    "Ordenes_Reales":"Ordenes Reales", "Ventas_Reales":"Ventas Reales",
-    "Capacidad_Instalada":"Capacidad Instalada", "Gasto_adicional":"Gasto adicional", "Venta_Perdida":"Venta Perdida", "Total_NC":"Total NC",
-}
-
-def clean_num(v):
-    if v is None or v == "" or str(v).strip() in {"-", "-   ", "-    ", "—"}: return 0
-    if isinstance(v, (int, float)) and not isinstance(v, bool):
-        if isinstance(v, float) and (math.isnan(v) or math.isinf(v)): return 0
-        return float(v)
-    s = str(v).strip().replace("$", "").replace(",", "")
-    pct = s.endswith("%")
-    s = s.replace("%", "")
-    try: n = float(s)
-    except ValueError: return 0
-    return n
-
-def clean_text(v):
-    if v is None: return ""
-    return re.sub(r"\s+", " ", str(v)).strip()
-
-def find_col(headers, names):
-    norm = {clean_text(h).lower(): i for i, h in enumerate(headers)}
-    for n in names:
-        if clean_text(n).lower() in norm: return norm[clean_text(n).lower()]
-    return None
-
-def catalog_id(cat, value):
-    value = clean_text(value)
-    if value not in cat: cat[value] = len(cat)
-    return cat[value]
-
-def strip_pago(h):
-    s = re.sub(r"^Avg \(NC ", "", clean_text(h)).replace(")", "")
-    return s.replace("Adm-", "").replace("Adm.", "Adm").strip()
-
-def strip_nc(h):
-    return clean_text(h).replace("NC ", "", 1).strip()
-
-def main():
-    if not INPUT.exists():
-        raise SystemExit(f"No existe {INPUT}. Coloca el Excel mensual como data/base.xlsx")
-    wb = load_workbook(INPUT, read_only=True, data_only=True)
-    ws = wb[SHEET] if SHEET in wb.sheetnames else wb[wb.sheetnames[0]]
-    rows_iter = ws.iter_rows(values_only=True)
-    headers = [clean_text(x) for x in next(rows_iter)]
-    dim_cols = {k: find_col(headers, names) for k, names in DIM_MAP.items()}
-    metric_cols = {k: find_col(headers, [h]) for k, h in METRIC_MAP.items()}
-    pago_cols = [(i, strip_pago(h)) for i, h in enumerate(headers) if clean_text(h).startswith("Avg (NC ")]
-    nc_cols = [(i, strip_nc(h)) for i, h in enumerate(headers) if clean_text(h).startswith("NC ")]
-    dims = {k: {} for k in DIM_MAP if k not in {"lat", "lng", "semana", "mesNum"}}
-    metric_keys = list(METRIC_MAP.keys())
-    pt, nt, pago_cat, nc_cat = [], [], {}, {}
-    r, p, nc = [], [], []
-    for row_idx, row in enumerate(rows_iter):
-        rec=[]
-        for k in ["region","dm","tienda","cc","mes"]:
-            rec.append(catalog_id(dims[k], row[dim_cols[k]] if dim_cols[k] is not None else ""))
-        rec.append(int(clean_num(row[dim_cols["mesNum"]])) if dim_cols["mesNum"] is not None else 0)
-        rec.append(int(clean_num(row[dim_cols["semana"]])) if dim_cols["semana"] is not None else 0)
-        for k in ["formato","categoria"]:
-            rec.append(catalog_id(dims[k], row[dim_cols[k]] if dim_cols[k] is not None else ""))
-        rec.append(clean_num(row[dim_cols["lat"]]) if dim_cols["lat"] is not None else 0)
-        rec.append(clean_num(row[dim_cols["lng"]]) if dim_cols["lng"] is not None else 0)
-        rec.extend(clean_num(row[metric_cols[k]]) if metric_cols[k] is not None else 0 for k in metric_keys)
-        r.append(rec)
-        rid=len(r)-1
-        for ci,name in pago_cols:
-            v=clean_num(row[ci])
-            if v:
-                if name not in pago_cat: pago_cat[name]=len(pt); pt.append(name)
-                p.append([rid,pago_cat[name],v])
-        for ci,name in nc_cols:
-            v=clean_num(row[ci])
-            if v:
-                if name not in nc_cat: nc_cat[name]=len(nt); nt.append(name)
-                nc.append([rid,nc_cat[name],v])
-    d_out={k:[None]*len(v) for k,v in dims.items()}
-    for k,cat in dims.items():
-        for name,i in cat.items(): d_out[k][i]=name
-    model={"m":{"rows":len(r),"pago_entries":len(p),"nc_entries":len(nc),"source":INPUT.name,"sheet":ws.title},"d":d_out,"k":metric_keys,"r":r,"pt":pt,"p":p,"nt":nt,"nc":nc}
-    OUTPUT.write_text(json.dumps(model, ensure_ascii=False, separators=(",",":")), encoding="utf-8")
-    print(f"Modelo actualizado: {OUTPUT} · registros {len(r):,}")
-
-if __name__ == "__main__":
-    main()
+from pathlib import Path
+import json, re, math, unicodedata
+ROOT=Path(__file__).resolve().parents[1]
+SRC=ROOT/'data'/'base.xlsx'
+OUT=ROOT/'data'/'model.json'
+filters={'tienda':'CC Nombre','dm':'DM','mes':'Fecha mes','region':'Reg Nom Actual','semana':'Semana'}
+metrics={'IPLH':'IPLH','TPLH':'TPLH','Ratio':'Ratio','NC_Pct':'% NC','Horas_Planificadas':'Avg (Horas Planificadas)','Plantilla_Ideal':'Emp. Autorizados','Plantilla_Real':'Emp. Reales','Exactitud_Kronos':'Exactitud Kronos','Items_ADT':'Items','Items_Ajuste_SM':'Items Gerente (Aj.)','Items_Kronos':'Items Kronos (Proy.)','Items_Reales':'Items Reales','Ordenes_Reales':'Ordenes Reales'}
+payment_cols={'Act. Promo':'Avg (NC Act. Promo)','Estándares':'Avg (NC Adm-Estandares de Operacion)','Hacer Pedido':'Avg (NC Adm-Hacer Pedidos)','Horarios':'Avg (NC Adm-Horarios)','Juntas':'Avg (NC Adm-Juntas)','Reclutamiento':'Avg (NC Adm-Reclutamiento y Selección)','Admon & Efectivo':'Avg (NC Admon. & Efectivo)','Admon de Inventarios':'Avg (NC Admon. de Inventarios)','Capacitación':'Avg (NC Capacitación)','Conexiones Partner':'Avg (NC Conexiones Partner)','RH':'Avg (NC Procesos RH)'}
+nc_cols={'Falta':'NC Ausencia injustificada','Break':'NC Break','Cumpleaños':'NC Cumpleaños','Día Adicional':'NC Dia Adicional','Gral. Inicial':'NC Incap. Enf. Gral. Inicial','Gral. Subsecuente':'NC Incap. Enf. Gral. Subsecuente','Incap. Maternidad':'NC Incap. Maternidad','Riesgo de trabajo':'NC Incap. Riesgo de trabajo','Permiso con Goce':'NC Permiso con Goce','Permiso sin Goce':'NC Permiso sin Goce'}
+month_order=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+def clean_text(x):
+    if x is None: return ''
+    return re.sub(r'\s+',' ',str(x).strip())
+def parse_num(x):
+    if x is None: return 0.0
+    if isinstance(x,(int,float)):
+        if math.isnan(float(x)): return 0.0
+        return float(x)
+    s=str(x).strip().replace('$','').replace(',','').replace(' ','')
+    if s in ('','-','–','—','nan','None'): return 0.0
+    is_pct='%' in s
+    s=s.replace('%','')
+    try:
+        v=float(s)
+        return v/100 if is_pct and v>1 else v
+    except Exception:
+        return 0.0
+def norm_month(s):
+    s=clean_text(s).lower()
+    ss=''.join(c for c in unicodedata.normalize('NFD',s) if unicodedata.category(c)!='Mn')
+    for m in month_order:
+        mm=''.join(c for c in unicodedata.normalize('NFD',m.lower()) if unicodedata.category(c)!='Mn')
+        if mm in ss: return m
+    return clean_text(s).title()
+if not SRC.exists():
+    raise SystemExit('No existe data/base.xlsx. Coloca la base mensual con ese nombre.')
+wb=load_workbook(SRC,read_only=True,data_only=True)
+ws=wb['Base_WFM']
+headers=[clean_text(c) for c in next(ws.iter_rows(min_row=1,max_row=1,values_only=True))]
+idx={h:i for i,h in enumerate(headers)}
+missing=[h for h in list(filters.values())+list(metrics.values())+list(payment_cols.values())+list(nc_cols.values()) if h not in idx]
+if 'NC Break' in missing and 'Horas Descanso' in idx:
+    missing.remove('NC Break'); nc_cols['Break']='Horas Descanso'
+D={k:[] for k in ['region','dm','tienda','mes']}; D_index={k:{} for k in D}
+def dim_id(k,v):
+    v=norm_month(v) if k=='mes' else clean_text(v)
+    if v not in D_index[k]: D_index[k][v]=len(D[k]); D[k].append(v)
+    return D_index[k][v]
+R=[]; P=[]; N=[]
+for row in ws.iter_rows(min_row=2,values_only=True):
+    if not any(row): continue
+    semana=parse_num(row[idx[filters['semana']]])
+    if not semana: continue
+    r=[dim_id('region',row[idx[filters['region']]]),dim_id('dm',row[idx[filters['dm']]]),dim_id('tienda',row[idx[filters['tienda']]]),dim_id('mes',row[idx[filters['mes']]]),int(semana)]
+    for key,h in metrics.items():
+        v=parse_num(row[idx[h]]) if h in idx else 0
+        if key in ['NC_Pct','Exactitud_Kronos'] and v>1.5: v/=100
+        r.append(round(v,6))
+    R.append(r); ri=len(R)-1
+    for pi,(label,h) in enumerate(payment_cols.items()):
+        v=parse_num(row[idx[h]]) if h in idx else 0
+        if v>0: P.append([ri,pi,round(v,4)])
+    for ni,(label,h) in enumerate(nc_cols.items()):
+        v=parse_num(row[idx[h]]) if h in idx else 0
+        if v>0: N.append([ri,ni,round(v,4)])
+model={'version':'1.0-clean','meta':{'rows':len(R),'source':'data/base.xlsx','rule':'Solo columnas con instrucción. Columnas sin instrucción omitidas.','missing':missing},'dims':D,'monthOrder':month_order,'metrics':list(metrics.keys()),'metricLabels':{'IPLH':'IPLH','TPLH':'TPLH','Ratio':'Ratio gerencial','NC_Pct':'% NC','Horas_Planificadas':'Horas planificadas','Plantilla_Ideal':'Plantilla ideal','Plantilla_Real':'Plantilla real','Exactitud_Kronos':'Exactitud Kronos','Items_ADT':'Items / ADT','Items_Ajuste_SM':'Items Ajuste SM','Items_Kronos':'Items Kronos','Items_Reales':'Items Reales','Ordenes_Reales':'Órdenes reales'},'rows':R,'paymentTypes':list(payment_cols.keys()),'payments':P,'ncTypes':list(nc_cols.keys()),'nc':N}
+OUT.write_text(json.dumps(model,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+print(f'Modelo actualizado: {len(R):,} registros · {OUT}')

@@ -1,1 +1,5 @@
-const CACHE='wfm-intelligence-v2';const ASSETS=['./','index.html','src/styles.css','src/app.js','data/model.json','assets/logo.png','manifest.json'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
+const CACHE='wfm-intelligence-v1-clean';
+const ASSETS=['./','index.html','src/app.js','src/styles.css','data/model.json','assets/logo.png','manifest.json'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
+self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
