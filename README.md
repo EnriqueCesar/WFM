@@ -1,60 +1,44 @@
-# WFM Intelligence v1.0
-## Executive Command Center · Planning is Key
+# WFM Intelligence
 
-Proyecto PWA listo para GitHub Pages, optimizado y simplificado para usar únicamente las columnas con instrucción.
+## v2-semana-27-ui-refinement
 
-## Qué incluye
+Dashboard operativo WFM actualizado con información histórica y datos disponibles hasta la **Semana 27**.
 
-- Executive Score / WFM Score.
-- Centro de decisiones: máximo 4 alertas accionables.
-- Filtros dinámicos: Región, DM, Tienda, Mes y selección múltiple de semanas.
-- Menú limpio: Inicio, Indicadores, Código Pago, NC, Plantilla, Items, Tendencias, Reportes y Configuración.
-- Tablas inteligentes con Valor, %, Semana anterior, Variación, Semáforo y Estado.
-- Gráficas con eje horizontal, eje vertical y valores visibles.
-- Código Pago normalizado.
-- NC normalizado.
-- Modelo limpio: omite columnas sin instrucción.
-- PWA instalable y compatible con GitHub Pages.
+### Fuente
 
-## Publicar en GitHub Pages
+- Archivo fuente: `Dashboard_WFM.xlsx`
+- Hoja utilizada: `Base_WFM`
+- Lectura por nombre de hoja y encabezado, sin depender de posiciones fijas de columnas.
+- Data publicada en `data/model.json`.
 
-1. Sube todo el contenido del ZIP al repositorio `wfm_intelligence`.
-2. En GitHub ve a **Settings > Pages**.
-3. Selecciona **Deploy from branch**.
-4. Branch: `main` / folder: `/root`.
-5. Guarda y abre el enlace publicado.
+### Cambios
 
-## Actualización mensual
+- Integración de Semana 27 sin eliminar información histórica.
+- Menú **Configuración** oculto; su lógica de procesamiento permanece en el proyecto.
+- Navegación operativa simplificada.
+- Iconografía SVG monoline consistente.
+- Interfaz refinada con tarjetas modulares, jerarquía visual, tablas legibles y vista responsive.
+- Paleta corporativa basada en verde `#006241`.
+- Mejoras de impresión y exportación a PDF.
 
-La app usa `data/model.json` para cargar rápido. Para actualizar datos:
+### Validaciones ejecutadas
 
-1. Reemplaza el archivo `data/base.xlsx` con la nueva base mensual.
-2. Ejecuta:
+- Generación del modelo desde `Base_WFM`.
+- Semana más reciente: 27.
+- Registros Semana 27: 942.
+- Duplicados exactos eliminados: 0.
+- Encabezados requeridos faltantes: 0.
+- Validación de sintaxis JavaScript.
+- Validación de `manifest.json` y rutas estáticas.
+- Compatibilidad con GitHub Pages y PWA conservada.
+- Ningún archivo del proyecto supera 20 MB.
+
+### Actualización de data
 
 ```bash
-python scripts/refresh_data.py
+python scripts/refresh_data.py /ruta/Dashboard_WFM.xlsx
 ```
 
-3. Sube el nuevo `data/model.json` a GitHub.
+### Despliegue
 
-## Columnas usadas
-
-Solo las columnas con instrucción del archivo original:
-
-- Filtros: CC Nombre, DM, Fecha mes, Reg Nom Actual, Semana.
-- Indicadores: IPLH, TPLH, Ratio, % NC, Avg Horas Planificadas, Plantilla, Exactitud Kronos, Items, Items SM, Items Kronos, Items Reales, Órdenes Reales.
-- Código Pago: solo las columnas `Avg (NC ...)` indicadas.
-- NC: solo las columnas `NC ...` indicadas.
-
-## Archivos principales
-
-```text
-index.html
-manifest.json
-sw.js
-src/app.js
-src/styles.css
-data/model.json
-scripts/refresh_data.py
-assets/logo.png
-```
+Publicar la raíz del repositorio mediante GitHub Pages. Todas las rutas son relativas y no requieren servidor de aplicación.

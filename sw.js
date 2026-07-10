@@ -1,4 +1,4 @@
-const CACHE='wfm-intelligence-v1-clean';
+const CACHE='wfm-intelligence-v2-semana-27';
 const ASSETS=['./','index.html','src/app.js','src/styles.css','data/model.json','assets/logo.png','manifest.json'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));

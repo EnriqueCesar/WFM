@@ -10,3 +10,16 @@ main{padding:20px 24px 48px;min-width:0}.topbar{display:flex;justify-content:spa
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}#view{animation:fade .22s ease}
 @media(max-width:1200px){#app{grid-template-columns:1fr}.sidebar{position:fixed;left:0;top:0;transform:translateX(-105%);transition:.25s;width:280px}.sidebar.open{transform:none}#menuBtn{display:block}.filters{grid-template-columns:repeat(2,1fr)}.weeks{grid-column:1/-1}.hero,.two,.three,.kpi-grid{grid-template-columns:1fr}.export,.side-foot{position:static;margin-top:18px}.score-cols{grid-template-columns:1fr}.score-cols div+div{border-left:0;padding-left:0}}
 @page{size:letter landscape;margin:12mm}@media print{body{background:#fff}.sidebar,.topbar,.filters,.actions,#menuBtn{display:none!important}#app{display:block}main{padding:0}.card,.score,.kpi{box-shadow:none;break-inside:avoid}.hero,.two,.three,.kpi-grid{grid-template-columns:repeat(2,1fr)}.cover{break-after:page}.chart{max-height:270px}.alert{break-inside:avoid}}
+
+/* v2 Semana 27 · refinamiento visual */
+:root{--surface:#ffffff;--surface-soft:#f3f6f4;--ink-soft:#31413a;--radius:20px}
+body{background:#f4f7f5;color:var(--ink)}
+.sidebar{background:var(--dark);padding:20px;border-right:1px solid rgba(255,255,255,.12)}
+.brand{padding:10px 8px 18px;border-bottom:1px solid rgba(255,255,255,.14)}
+.brand img{width:52px;height:52px}.brand h1{font-size:18px}.brand p{font-weight:700}
+#nav{display:grid;gap:7px;margin-top:18px}.navbtn{display:flex;align-items:center;gap:12px;margin:0;padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-radius:15px;background:rgba(255,255,255,.04);font-weight:750}.navbtn:hover,.navbtn.active{transform:none;background:#dff3e8;color:var(--dark);border-color:#dff3e8}.nav-icon{width:22px;height:22px;display:grid;place-items:center;flex:0 0 auto}.nav-icon svg,.export svg,#menuBtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.export{display:flex;align-items:center;justify-content:center;gap:9px;background:transparent;border-radius:14px}
+main{padding:24px 28px 52px}.topbar{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 18px}.topbar h2{font-size:25px}.topbar p{font-size:13px}.filters{background:#fff;backdrop-filter:none;border-radius:20px;box-shadow:0 8px 24px rgba(0,45,30,.06)}
+.card,.score,.kpi{background:#fff;border-radius:20px;box-shadow:0 8px 24px rgba(0,45,30,.06)}.card:before,.kpi:before,.score:before{display:none}.kpi{border-top:4px solid var(--line)}.kpi.good{border-top-color:var(--green)}.kpi.warn{border-top-color:var(--amber)}.kpi.bad{border-top-color:var(--red)}
+.smart{border:1px solid var(--line);border-radius:14px;overflow:hidden}.smart th{background:var(--surface-soft);color:var(--ink-soft);font-weight:800}.smart tbody tr:last-child td{border-bottom:0}.week.on,.chip.on{background:var(--green)}
+@media(max-width:700px){main{padding:12px}.topbar{padding:12px}.topbar h2{font-size:21px}.filters{grid-template-columns:1fr}.weeks{grid-column:auto}.kpi-num{font-size:27px}.card,.score,.kpi{padding:14px;border-radius:17px}.smart{display:block;overflow-x:auto}.topbar .actions{margin-left:auto}}
